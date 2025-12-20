@@ -1,14 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --bg-deep: 224 71% 4%;
-  --bg-surface: 222 47% 7%;
-  --sapphire: 217 91% 60%;
-  --sapphire-glow: 217 91% 60% / 0.15;
-  --text-primary: 210 40% 98%;
-  --text-muted: 215 20% 65%;
-  --border-glass: 217 91% 60% / 0.2;
-  --card-glass: 222 47% 4% / 0.6;
+  --bg-white: 0 0% 100%;
+  --bg-surface: 210 20% 98%;
+  --medical-blue: 217 91% 45%;
+  --medical-glow: 217 91% 45% / 0.1;
+  --text-primary: 222 47% 12%;
+  --text-muted: 215 20% 45%;
+  --border-glass: 217 91% 45% / 0.15;
+  --card-glass: 0 0% 100% / 0.85;
 }
 
 * {
@@ -19,7 +19,12 @@
 }
 
 body {
-  background: radial-gradient(circle at 50% 0%, hsl(222 47% 12%), hsl(var(--bg-deep)));
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.92)),
+    url('./assets/hospital_bg.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   color: hsl(var(--text-primary));
   min-height: 100vh;
   line-height: 1.6;
@@ -161,14 +166,19 @@ body {
 /* Premium Components */
 .glass-effect {
   background: hsl(var(--card-glass));
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
   border: 1px solid hsl(var(--border-glass));
   border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+}
+
+.result-card-padding {
+  padding: 1.5rem;
 }
 
 .title-gradient {
-  background: linear-gradient(to bottom, #fff 20%, hsl(var(--sapphire)));
+  background: linear-gradient(135deg, hsl(var(--medical-blue)) 0%, #000 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -187,19 +197,20 @@ body {
 
 .search-input-field {
   width: 100%;
-  background: hsl(var(--bg-surface));
+  background: white;
   border: 1px solid hsl(var(--border-glass));
   padding: 1.25rem 1.5rem 1.25rem 3.5rem;
   border-radius: 100px;
-  color: white;
+  color: hsl(var(--text-primary));
   font-size: 1.1rem;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .search-input-field:focus {
   outline: none;
-  border-color: hsl(var(--sapphire));
-  box-shadow: 0 0 30px hsl(var(--sapphire-glow));
+  border-color: hsl(var(--medical-blue));
+  box-shadow: 0 0 30px hsl(var(--medical-glow));
 }
 
 .filter-bar {
@@ -228,7 +239,7 @@ body {
 .filter-input {
   background: transparent;
   border: none;
-  color: white;
+  color: hsl(var(--text-primary));
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -236,7 +247,7 @@ body {
 }
 
 .filter-select option {
-  background: hsl(var(--bg-surface));
+  background: white;
 }
 
 .results-grid {
@@ -252,20 +263,88 @@ body {
   }
 }
 
+.text-medical {
+  color: hsl(var(--medical-blue));
+}
+
+.uppercase {
+  text-transform: uppercase;
+}
+
+.medical-tag {
+  background: hsla(217, 91%, 45%, 0.04);
+  border: 1px solid hsla(217, 91%, 45%, 0.1);
+  color: hsl(var(--medical-blue));
+  padding: 0 0.5rem;
+  height: 22px;
+  border-radius: 5px;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  line-height: normal;
+  transition: all 0.2s ease;
+}
+
+.medical-tag:hover {
+  background: hsla(217, 91%, 45%, 0.08);
+  border-color: hsla(217, 91%, 45%, 0.18);
+}
+
+.year-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: hsl(var(--medical-glow));
+  border: 1px solid hsla(217, 91%, 45%, 0.12);
+  padding: 0 0.6rem;
+  height: 22px;
+  border-radius: 5px;
+  color: hsl(var(--medical-blue));
+}
+
 .card-tag {
   font-size: 0.65rem;
   font-weight: 800;
   text-transform: uppercase;
   padding: 0.25rem 0.6rem;
   border-radius: 4px;
-  background: hsl(var(--sapphire-glow));
-  color: hsl(var(--sapphire));
+  background: hsl(var(--medical-glow));
+  color: hsl(var(--medical-blue));
+}
+
+.medical-button {
+  background: hsl(var(--medical-blue));
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px hsl(var(--medical-glow));
+}
+
+.medical-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px hsl(var(--medical-glow));
+  filter: brightness(1.1);
+}
+
+.medical-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .progress-track {
   width: 100%;
   height: 4px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 10px;
   margin-top: 1rem;
   overflow: hidden;
@@ -273,6 +352,6 @@ body {
 
 .progress-fill {
   height: 100%;
-  background: hsl(var(--sapphire));
-  box-shadow: 0 0 10px hsl(var(--sapphire));
+  background: hsl(var(--medical-blue));
+  box-shadow: 0 0 10px hsl(var(--medical-glow));
 }

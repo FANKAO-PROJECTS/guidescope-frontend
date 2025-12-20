@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import SearchBar from './components/SearchBar'
 import Filters from './components/Filters'
 import ResultCard from './components/ResultCard'
@@ -17,8 +17,14 @@ function App() {
   const [type, setType] = useState('')
   const [yearFrom, setYearFrom] = useState<number | ''>('')
   const [yearTo, setYearTo] = useState<number | ''>('')
+  const [query, setQuery] = useState('')
+  const [totalResults, setTotalResults] = useState(0)
+  const [offset, setOffset] = useState(0)
+  const PAGE_SIZE = 20
 
-  useState(() => {
+  const [isInitialMount, setIsInitialMount] = useState(true);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const q = params.get('q') || '';
     const t = params.get('type') || '';
@@ -26,32 +32,40 @@ function App() {
     const to = params.get('year_to');
 
     if (q || t || from || to) {
+      setQuery(q);
       setType(t);
       if (from) setYearFrom(parseInt(from));
       if (to) setYearTo(parseInt(to));
-      // Trigger search on mount if any criteria exist
+      // Manual trigger for initial load to avoid double-firing with the other effect
       handleSearch(q);
     }
-  });
+    setIsInitialMount(false);
+  }, []); // Run once on mount
 
-  const handleSearch = useCallback(async (query: string) => {
+  const handleSearch = useCallback(async (currentQuery: string, currentOffset: number = 0) => {
     const hasFilters = type || yearFrom || yearTo;
-    if (!query && !hasFilters) return;
+    if (!currentQuery && !hasFilters) {
+      setResults([]);
+      setHasSearched(false);
+      setTotalResults(0);
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
     setHasSearched(true);
 
     const params: SearchParams = {
-      q: query || undefined,
+      q: currentQuery || undefined,
       type: type || undefined,
       year_from: typeof yearFrom === 'number' ? yearFrom : undefined,
       year_to: typeof yearTo === 'number' ? yearTo : undefined,
-      limit: 20
+      limit: PAGE_SIZE,
+      offset: currentOffset
     }
 
     const url = new URL(window.location.href);
-    if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
+    if (currentQuery) url.searchParams.set('q', currentQuery); else url.searchParams.delete('q');
     if (type) url.searchParams.set('type', type); else url.searchParams.delete('type');
     if (yearFrom) url.searchParams.set('year_from', yearFrom.toString()); else url.searchParams.delete('year_from');
     if (yearTo) url.searchParams.set('year_to', yearTo.toString()); else url.searchParams.delete('year_to');
@@ -59,7 +73,12 @@ function App() {
 
     try {
       const data = await searchDocuments(params);
-      setResults(data);
+      if (currentOffset === 0) {
+        setResults(data.results);
+      } else {
+        setResults(prev => [...prev, ...data.results]);
+      }
+      setTotalResults(data.total);
     } catch (err) {
       setError('Service temporary unavailable. Please verify your connection.');
       console.error(err);
@@ -67,6 +86,24 @@ function App() {
       setIsLoading(false);
     }
   }, [type, yearFrom, yearTo]);
+
+  const loadMore = () => {
+    const nextOffset = offset + PAGE_SIZE;
+    setOffset(nextOffset);
+    handleSearch(query, nextOffset);
+  };
+
+  // Use second useEffect for triggering searches on filter/query changes
+  useEffect(() => {
+    if (isInitialMount) return;
+
+    const delayDebounceFn = setTimeout(() => {
+      setOffset(0);
+      handleSearch(query, 0);
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [query, type, yearFrom, yearTo, handleSearch, isInitialMount]);
 
   return (
     <div className="container mt-8">
@@ -76,7 +113,7 @@ function App() {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-center gap-4 mb-4"
         >
-          <BookOpen className="text-sapphire" size={42} />
+          <BookOpen className="text-medical" size={42} />
           <h1 className="text-4xl title-gradient">GuidelineX</h1>
         </motion.div>
         <p className="text-muted">
@@ -86,7 +123,7 @@ function App() {
 
       <main className="flex flex-col gap-6">
         <div className="flex flex-col gap-4">
-          <SearchBar onSearch={handleSearch} isLoading={isLoading} />
+          <SearchBar query={query} setQuery={setQuery} onSearch={handleSearch} isLoading={isLoading} />
           <Filters
             type={type} setType={setType}
             yearFrom={yearFrom} setYearFrom={setYearFrom}
@@ -105,8 +142,21 @@ function App() {
                 <p className="text-muted">{error}</p>
               </motion.div>
             ) : results.length > 0 ? (
-              <div key="results" className="results-grid">
-                {results.map((r, idx) => <ResultCard key={r.id} result={r} index={idx} />)}
+              <div key="results">
+                <div className="results-grid">
+                  {results.map((r, idx) => <ResultCard key={`${r.id}-${idx}`} result={r} index={idx} />)}
+                </div>
+                {results.length < totalResults && (
+                  <div className="flex justify-center py-12">
+                    <button
+                      onClick={loadMore}
+                      disabled={isLoading}
+                      className="medical-button"
+                    >
+                      {isLoading ? 'Enhancing Results...' : `View ${totalResults - results.length} More Insights`}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : hasSearched ? (
               <div key="empty" className="text-center p-12 text-muted">

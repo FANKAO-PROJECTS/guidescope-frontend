@@ -13,10 +13,15 @@ interface FiltersProps {
 const Filters: React.FC<FiltersProps> = ({
     type, setType, yearFrom, setYearFrom, yearTo, setYearTo,
 }) => {
+    const years = Array.from(
+        { length: new Date().getFullYear() - 1989 },
+        (_, i) => (new Date().getFullYear() + 1 - i).toString()
+    );
+
     return (
         <div className="glass-effect filter-bar">
             <div className="flex items-center gap-2">
-                <Filter size={16} className="text-sapphire" />
+                <Filter size={16} className="text-medical" />
                 <span className="filter-label">Refine</span>
             </div>
 
@@ -35,24 +40,26 @@ const Filters: React.FC<FiltersProps> = ({
 
             <div className="filter-group">
                 <label className="filter-label">Timeline Start</label>
-                <input
-                    type="number"
-                    placeholder="Year"
+                <select
                     value={yearFrom}
                     onChange={(e) => setYearFrom(e.target.value === '' ? '' : parseInt(e.target.value))}
-                    className="filter-input w-24"
-                />
+                    className="filter-select"
+                >
+                    <option value="">Any Year</option>
+                    {years.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
             </div>
 
             <div className="filter-group">
                 <label className="filter-label">Timeline End</label>
-                <input
-                    type="number"
-                    placeholder="Year"
+                <select
                     value={yearTo}
                     onChange={(e) => setYearTo(e.target.value === '' ? '' : parseInt(e.target.value))}
-                    className="filter-input w-24"
-                />
+                    className="filter-select"
+                >
+                    <option value="">Any Year</option>
+                    {years.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
             </div>
         </div>
     );

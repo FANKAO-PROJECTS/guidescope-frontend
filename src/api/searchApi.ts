@@ -26,13 +26,20 @@ export interface SearchResult {
     score: number;
 }
 
-export const searchDocuments = async (params: SearchParams): Promise<SearchResult[]> => {
+export interface SearchResponse {
+    results: SearchResult[];
+    total: number;
+    limit: number;
+    offset: number;
+}
+
+export const searchDocuments = async (params: SearchParams): Promise<SearchResponse> => {
     // Filter out undefined/null params
     const cleanParams = Object.fromEntries(
         Object.entries(params).filter(([_, v]) => v != null)
     );
 
-    const response = await api.get<SearchResult[]>('/search', { params: cleanParams });
+    const response = await api.get<SearchResponse>('/search', { params: cleanParams });
     return response.data;
 };
 

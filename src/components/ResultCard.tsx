@@ -14,7 +14,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, index }) => {
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.04 }}
-            className="glass-effect p-8 flex flex-col justify-between hover:border-sapphire transition-all group cursor-pointer"
+            className="glass-effect result-card-padding flex flex-col justify-between hover:border-medical-blue transition-all group cursor-pointer"
             onClick={() => window.open(result.link, '_blank')}
         >
             <div className="mb-4">
@@ -27,18 +27,24 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, index }) => {
                     {result.title}
                 </h3>
 
-                <div className="flex gap-4 items-center text-xs text-muted mb-4">
-                    <div className="flex items-center gap-1">
-                        <Calendar size={14} />
-                        {result.year}
+                <div className="flex flex-wrap items-center gap-6 mb-6">
+                    <div className="year-badge shrink-0">
+                        <Calendar size={13} className="opacity-70" />
+                        <span className="font-bold text-[11px] leading-none">{result.year}</span>
                     </div>
+
                     {result.keywords && result.keywords.length > 0 && (
-                        <div className="flex items-center gap-1 overflow-hidden">
-                            <Tag size={12} />
-                            <div className="flex gap-1">
-                                {result.keywords.slice(0, 2).map((k, i) => (
-                                    <span key={i} className="bg-white/5 px-1.5 py-0.5 rounded opacity-70">{k}</span>
-                                ))}
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            <Tag size={13} className="text-medical opacity-40 shrink-0" />
+                            <div className="flex flex-wrap gap-1.5 items-center">
+                                {result.keywords
+                                    .flatMap(k => k.split(' '))
+                                    .slice(0, 5)
+                                    .map((k, i) => (
+                                        <span key={i} className="medical-tag">
+                                            {k}
+                                        </span>
+                                    ))}
                             </div>
                         </div>
                     )}
