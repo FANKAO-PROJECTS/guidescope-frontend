@@ -1,0 +1,278 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg-deep: 224 71% 4%;
+  --bg-surface: 222 47% 7%;
+  --sapphire: 217 91% 60%;
+  --sapphire-glow: 217 91% 60% / 0.15;
+  --text-primary: 210 40% 98%;
+  --text-muted: 215 20% 65%;
+  --border-glass: 217 91% 60% / 0.2;
+  --card-glass: 222 47% 4% / 0.6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background: radial-gradient(circle at 50% 0%, hsl(222 47% 12%), hsl(var(--bg-deep)));
+  color: hsl(var(--text-primary));
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Layout Utilities Manager */
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.gap-6 {
+  gap: 1.5rem;
+}
+
+.gap-8 {
+  gap: 2rem;
+}
+
+.mt-8 {
+  margin-top: 2rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+.mb-8 {
+  margin-bottom: 2rem;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Spacing Utilities */
+.p-2 {
+  padding: 0.5rem;
+}
+
+.p-4 {
+  padding: 1rem;
+}
+
+.p-6 {
+  padding: 1.5rem;
+}
+
+.p-8 {
+  padding: 2rem;
+}
+
+.p-12 {
+  padding: 3rem;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.py-8 {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.py-12 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.py-24 {
+  padding-top: 6rem;
+  padding-bottom: 6rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.mb-6 {
+  margin-bottom: 1.5rem;
+}
+
+/* Positioning Utilities */
+.absolute {
+  position: absolute;
+}
+
+.left-6 {
+  left: 1.5rem;
+}
+
+.top-1\/2 {
+  top: 50%;
+}
+
+.-translate-y-1\/2 {
+  transform: translateY(-50%);
+}
+
+/* Premium Components */
+.glass-effect {
+  background: hsl(var(--card-glass));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--border-glass));
+  border-radius: 20px;
+}
+
+.title-gradient {
+  background: linear-gradient(to bottom, #fff 20%, hsl(var(--sapphire)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.search-box-wrapper {
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.search-box-wrapper:focus-within {
+  transform: translateY(-2px);
+}
+
+.search-input-field {
+  width: 100%;
+  background: hsl(var(--bg-surface));
+  border: 1px solid hsl(var(--border-glass));
+  padding: 1.25rem 1.5rem 1.25rem 3.5rem;
+  border-radius: 100px;
+  color: white;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.search-input-field:focus {
+  outline: none;
+  border-color: hsl(var(--sapphire));
+  box-shadow: 0 0 30px hsl(var(--sapphire-glow));
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1rem 1.5rem;
+  gap: 2rem;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.filter-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: hsl(var(--text-muted));
+  letter-spacing: 0.05em;
+}
+
+.filter-select,
+.filter-input {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+}
+
+.filter-select option {
+  background: hsl(var(--bg-surface));
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+  padding-bottom: 5rem;
+}
+
+@media (max-width: 768px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  background: hsl(var(--sapphire-glow));
+  color: hsl(var(--sapphire));
+}
+
+.progress-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  margin-top: 1rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: hsl(var(--sapphire));
+  box-shadow: 0 0 10px hsl(var(--sapphire));
+}
