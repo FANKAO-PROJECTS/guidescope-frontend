@@ -8,7 +8,7 @@ const api = axios.create({
 });
 
 export interface SearchParams {
-    q: string;
+    q?: string;
     type?: string;
     year_from?: number;
     year_to?: number;

@@ -20,32 +20,38 @@ function App() {
 
   useState(() => {
     const params = new URLSearchParams(window.location.search);
-    const q = params.get('q');
-    if (q) {
-      setType(params.get('type') || '');
-      const from = params.get('year_from');
-      const to = params.get('year_to');
+    const q = params.get('q') || '';
+    const t = params.get('type') || '';
+    const from = params.get('year_from');
+    const to = params.get('year_to');
+
+    if (q || t || from || to) {
+      setType(t);
       if (from) setYearFrom(parseInt(from));
       if (to) setYearTo(parseInt(to));
+      // Trigger search on mount if any criteria exist
+      handleSearch(q);
     }
   });
 
   const handleSearch = useCallback(async (query: string) => {
-    if (!query) return;
+    const hasFilters = type || yearFrom || yearTo;
+    if (!query && !hasFilters) return;
+
     setIsLoading(true);
     setError(null);
     setHasSearched(true);
 
     const params: SearchParams = {
-      q: query,
+      q: query || undefined,
       type: type || undefined,
-      year_from: yearFrom || undefined,
-      year_to: yearTo || undefined,
+      year_from: typeof yearFrom === 'number' ? yearFrom : undefined,
+      year_to: typeof yearTo === 'number' ? yearTo : undefined,
       limit: 20
     }
 
     const url = new URL(window.location.href);
-    url.searchParams.set('q', query);
+    if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
     if (type) url.searchParams.set('type', type); else url.searchParams.delete('type');
     if (yearFrom) url.searchParams.set('year_from', yearFrom.toString()); else url.searchParams.delete('year_from');
     if (yearTo) url.searchParams.set('year_to', yearTo.toString()); else url.searchParams.delete('year_to');
