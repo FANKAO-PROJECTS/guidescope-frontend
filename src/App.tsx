@@ -44,6 +44,10 @@ function App() {
     setHasSearched(true);
     setSubmittedQuery(keyword);
 
+    if (currentOffset === 0) {
+      setResults([]);
+    }
+
     const params: SearchParams = {
       q: keyword || undefined,
       type: type || undefined,
@@ -64,6 +68,14 @@ function App() {
     if (yearFrom) url.searchParams.set('year_from', yearFrom.toString()); else url.searchParams.delete('year_from');
     if (yearTo) url.searchParams.set('year_to', yearTo.toString()); else url.searchParams.delete('year_to');
     window.history.pushState({}, '', url.toString());
+
+    // If no query and no filters, reset to initial state
+    if (!keyword && !type && !region && !field && !yearFrom && !yearTo) {
+      setHasSearched(false);
+      setResults([]);
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const data = await searchDocuments(params);
@@ -146,7 +158,7 @@ function App() {
   // Filter Rule — Rule B: One or more filters have values -> execute search
   useEffect(() => {
     const hasFilters = !!(type || region || field || yearFrom || yearTo);
-    if (hasFilters && hasSearched) {
+    if (hasFilters || hasSearched) {
       setOffset(0);
       handleSearch(submittedQuery, 0); // Filters trigger search using last submitted keyword
     }
@@ -239,6 +251,8 @@ function App() {
                     setYearTo('');
                     setResults([]);
                     setHasSearched(false);
+                    // Clear URL parameters
+                    window.history.pushState({}, '', window.location.pathname);
                   }}
                   className="mt-6 btn-tertiary"
                 >
