@@ -1,5 +1,6 @@
-import React from 'react';
-import { Search } from 'lucide-react';
+import React, { useRef, useEffect } from 'react';
+import Autocomplete from './Autocomplete';
+import { useAutocomplete } from '../hooks/useAutocomplete';
 
 interface SearchBarProps {
     query: string;
@@ -9,27 +10,70 @@ interface SearchBarProps {
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ query, setQuery, onSearch, isLoading }) => {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const { suggestions, selectedIndex, setSelectedIndex, clearSuggestions } = useAutocomplete(query, true);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        onSearch(query.trim());
+        const searchTerm = selectedIndex >= 0 ? suggestions[selectedIndex] : query.trim();
+        clearSuggestions();
+        onSearch(searchTerm);
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (suggestions.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setSelectedIndex(Math.min(selectedIndex + 1, suggestions.length - 1));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setSelectedIndex(Math.max(selectedIndex - 1, -1));
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            clearSuggestions();
+        }
+    };
+
+    const handleSuggestionSelect = (suggestion: string) => {
+        setQuery(suggestion);
+        clearSuggestions();
+        onSearch(suggestion);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
+                clearSuggestions();
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [clearSuggestions]);
+
     return (
-        <form onSubmit={handleSubmit} className="search-box-wrapper">
-            <Search
-                className="absolute left-6 top-1/2 -translate-y-1/2 text-muted"
-                size={20}
+        <div className="w-full relative" ref={inputRef}>
+            <form onSubmit={handleSubmit} className="w-full">
+                <input
+                    type="text"
+                    className="search-input-field !px-8 !py-3"
+                    placeholder="Search clinical guidelines, or browse using filters"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    disabled={isLoading}
+                    autoFocus
+                />
+            </form>
+            <Autocomplete
+                suggestions={suggestions}
+                selectedIndex={selectedIndex}
+                onSelect={handleSuggestionSelect}
+                onClose={clearSuggestions}
+                query={query}
             />
-            <input
-                type="text"
-                className="search-input-field"
-                placeholder="What insight are you looking for today?"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                disabled={isLoading}
-            />
-        </form>
+        </div>
     );
 };
 

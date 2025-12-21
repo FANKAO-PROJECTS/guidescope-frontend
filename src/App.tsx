@@ -1,12 +1,13 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import SearchBar from './components/SearchBar'
 import Filters from './components/Filters'
 import ResultCard from './components/ResultCard'
 import LoadingSpinner from './components/LoadingSpinner'
-import { searchDocuments } from './api/searchApi'
-import type { SearchResult, SearchParams } from './api/searchApi'
+import { searchDocuments, getCapabilities } from './api/searchApi'
+import type { SearchResult, SearchParams, SearchCapabilities } from './api/searchApi'
 import { BookOpen, AlertCircle, SearchIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import SearchMeta from './components/SearchMeta'
 
 function App() {
   const [results, setResults] = useState<SearchResult[]>([])
@@ -14,59 +15,52 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
 
+  // Filter States
   const [type, setType] = useState('')
+  const [region, setRegion] = useState('')
+  const [field, setField] = useState('')
   const [yearFrom, setYearFrom] = useState<number | ''>('')
   const [yearTo, setYearTo] = useState<number | ''>('')
-  const [query, setQuery] = useState('')
+
+  // Keyword Search States
+  const [query, setQuery] = useState('') // Local input state
+  const [submittedQuery, setSubmittedQuery] = useState('') // What we actually searched for
+
   const [totalResults, setTotalResults] = useState(0)
   const [offset, setOffset] = useState(0)
+  const [capabilities, setCapabilities] = useState<SearchCapabilities | null>(null)
   const PAGE_SIZE = 20
 
-  const [isInitialMount, setIsInitialMount] = useState(true);
+  // Rule: UI must never treat stale results as fresh.
+  const isStale = useMemo(() => {
+    // Stale if keyword in input doesn't match last submitted search
+    if (query !== submittedQuery) return true;
+    return false;
+  }, [query, submittedQuery]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const q = params.get('q') || '';
-    const t = params.get('type') || '';
-    const from = params.get('year_from');
-    const to = params.get('year_to');
-
-    if (q || t || from || to) {
-      setQuery(q);
-      setType(t);
-      if (from) setYearFrom(parseInt(from));
-      if (to) setYearTo(parseInt(to));
-      // Manual trigger for initial load to avoid double-firing with the other effect
-      handleSearch(q);
-    }
-    setIsInitialMount(false);
-  }, []); // Run once on mount
-
-  const handleSearch = useCallback(async (currentQuery: string, currentOffset: number = 0) => {
-    const hasFilters = type || yearFrom || yearTo;
-    if (!currentQuery && !hasFilters) {
-      setResults([]);
-      setHasSearched(false);
-      setTotalResults(0);
-      return;
-    }
-
+  const handleSearch = useCallback(async (keyword: string, currentOffset: number = 0) => {
     setIsLoading(true);
     setError(null);
     setHasSearched(true);
+    setSubmittedQuery(keyword);
 
     const params: SearchParams = {
-      q: currentQuery || undefined,
+      q: keyword || undefined,
       type: type || undefined,
+      region: region || undefined,
+      field: field || undefined,
       year_from: typeof yearFrom === 'number' ? yearFrom : undefined,
       year_to: typeof yearTo === 'number' ? yearTo : undefined,
       limit: PAGE_SIZE,
       offset: currentOffset
     }
 
+    // URL Sync
     const url = new URL(window.location.href);
-    if (currentQuery) url.searchParams.set('q', currentQuery); else url.searchParams.delete('q');
+    if (keyword) url.searchParams.set('q', keyword); else url.searchParams.delete('q');
     if (type) url.searchParams.set('type', type); else url.searchParams.delete('type');
+    if (region) url.searchParams.set('region', region); else url.searchParams.delete('region');
+    if (field) url.searchParams.set('field', field); else url.searchParams.delete('field');
     if (yearFrom) url.searchParams.set('year_from', yearFrom.toString()); else url.searchParams.delete('year_from');
     if (yearTo) url.searchParams.set('year_to', yearTo.toString()); else url.searchParams.delete('year_to');
     window.history.pushState({}, '', url.toString());
@@ -80,30 +74,83 @@ function App() {
       }
       setTotalResults(data.total);
     } catch (err) {
-      setError('Service temporary unavailable. Please verify your connection.');
+      setError('Service temporary unavailable.');
       console.error(err);
     } finally {
       setIsLoading(false);
     }
-  }, [type, yearFrom, yearTo]);
+  }, [type, region, field, yearFrom, yearTo]);
 
   const loadMore = () => {
     const nextOffset = offset + PAGE_SIZE;
     setOffset(nextOffset);
-    handleSearch(query, nextOffset);
+    handleSearch(submittedQuery, nextOffset);
   };
 
-  // Use second useEffect for triggering searches on filter/query changes
+  // INITIAL LOAD
   useEffect(() => {
-    if (isInitialMount) return;
+    const initialize = async () => {
+      try {
+        const caps = await getCapabilities();
+        setCapabilities(caps);
+      } catch (err) {
+        console.error('Failed to fetch capabilities:', err);
+      }
 
-    const delayDebounceFn = setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('q') || '';
+      const t = params.get('type') || '';
+      const r = params.get('region') || '';
+      const f = params.get('field') || '';
+      const from = params.get('year_from');
+      const to = params.get('year_to');
+
+      if (q || t || r || f || from || to) {
+        setQuery(q);
+        setSubmittedQuery(q);
+        setType(t);
+        setRegion(r);
+        setField(f);
+        if (from) setYearFrom(parseInt(from));
+        if (to) setYearTo(parseInt(to));
+
+        // Use timeout to ensure state is flushed or use internal vars
+        const searchParams: SearchParams = {
+          q: q || undefined,
+          type: t || undefined,
+          region: r || undefined,
+          field: f || undefined,
+          year_from: from ? parseInt(from) : undefined,
+          year_to: to ? parseInt(to) : undefined,
+          limit: PAGE_SIZE,
+          offset: 0
+        };
+
+        setIsLoading(true);
+        try {
+          const data = await searchDocuments(searchParams);
+          setResults(data.results);
+          setTotalResults(data.total);
+          setHasSearched(true);
+        } catch (err) {
+          setError('Failed to perform initial search.');
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    initialize();
+  }, []);
+
+  // Filter Rule — Rule B: One or more filters have values -> execute search
+  useEffect(() => {
+    const hasFilters = !!(type || region || field || yearFrom || yearTo);
+    if (hasFilters && hasSearched) {
       setOffset(0);
-      handleSearch(query, 0);
-    }, 400);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [query, type, yearFrom, yearTo, handleSearch, isInitialMount]);
+      handleSearch(submittedQuery, 0); // Filters trigger search using last submitted keyword
+    }
+  }, [type, region, field, yearFrom, yearTo]);
 
   return (
     <div className="container mt-8">
@@ -121,25 +168,43 @@ function App() {
         </p>
       </header>
 
-      <main className="flex flex-col gap-6">
-        <div className="flex flex-col gap-4">
-          <SearchBar query={query} setQuery={setQuery} onSearch={handleSearch} isLoading={isLoading} />
+      <main className="flex flex-col gap-8">
+        <div className="flex flex-col gap-6">
+          <SearchBar
+            query={query}
+            setQuery={setQuery}
+            onSearch={(q) => {
+              setOffset(0);
+              handleSearch(q, 0);
+            }}
+            isLoading={isLoading}
+          />
           <Filters
+            capabilities={capabilities}
             type={type} setType={setType}
+            region={region} setRegion={setRegion}
+            field={field} setField={setField}
             yearFrom={yearFrom} setYearFrom={setYearFrom}
             yearTo={yearTo} setYearTo={setYearTo}
+          />
+          <SearchMeta
+            total={totalResults}
+            count={results.length}
+            hasSearched={hasSearched}
+            isStale={isStale}
           />
         </div>
 
         <section className="min-h-[400px]">
           <AnimatePresence mode="wait">
-            {isLoading ? (
+            {isLoading && results.length === 0 ? (
               <LoadingSpinner key="loading" />
             ) : error ? (
               <motion.div key="error" className="text-center p-12">
                 <AlertCircle className="text-red-500 mb-4" size={48} />
                 <h2 className="mb-2">Search Interrupted</h2>
-                <p className="text-muted">{error}</p>
+                <p className="text-muted">We’re having trouble loading results.</p>
+                <p className="text-sm mt-1">Please try again.</p>
               </motion.div>
             ) : results.length > 0 ? (
               <div key="results">
@@ -151,9 +216,9 @@ function App() {
                     <button
                       onClick={loadMore}
                       disabled={isLoading}
-                      className="medical-button"
+                      className="btn-secondary w-full sm:w-auto"
                     >
-                      {isLoading ? 'Enhancing Results...' : `View ${totalResults - results.length} More Insights`}
+                      {isLoading ? 'Enhancing Results...' : 'Load more results'}
                     </button>
                   </div>
                 )}
@@ -161,15 +226,33 @@ function App() {
             ) : hasSearched ? (
               <div key="empty" className="text-center p-12 text-muted">
                 <SearchIcon size={48} className="mb-4 opacity-10" />
-                <p>No results match your criteria.</p>
+                <p>No results found.</p>
+                <p className="text-sm mt-2">Try adjusting filters or using broader terms.</p>
+                <button
+                  onClick={() => {
+                    setQuery('');
+                    setSubmittedQuery('');
+                    setType('');
+                    setRegion('');
+                    setField('');
+                    setYearFrom('');
+                    setYearTo('');
+                    setResults([]);
+                    setHasSearched(false);
+                  }}
+                  className="mt-6 btn-tertiary"
+                >
+                  Clear all
+                </button>
               </div>
             ) : (
               <motion.div key="welcome" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center p-12 glass-effect">
                 <h3 className="mb-4">Begin Your Investigation</h3>
+                <p className="text-sm text-muted mb-8 italic">Titles are primary data, not decorations.</p>
                 <div className="flex justify-center gap-8 text-muted">
                   <div className="flex flex-col items-center">
                     <span className="card-tag mb-2">1</span>
-                    <p className="text-xs">Define query</p>
+                    <p className="text-xs">Type keyword & Enter</p>
                   </div>
                   <div className="flex flex-col items-center">
                     <span className="card-tag mb-2">2</span>
@@ -177,7 +260,7 @@ function App() {
                   </div>
                   <div className="flex flex-col items-center">
                     <span className="card-tag mb-2">3</span>
-                    <p className="text-xs">Explore insights</p>
+                    <p className="text-xs">Examine full titles</p>
                   </div>
                 </div>
               </motion.div>

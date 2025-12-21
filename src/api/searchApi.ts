@@ -10,6 +10,8 @@ const api = axios.create({
 export interface SearchParams {
     q?: string;
     type?: string;
+    region?: string;
+    field?: string;
     year_from?: number;
     year_to?: number;
     limit?: number;
@@ -19,11 +21,22 @@ export interface SearchParams {
 export interface SearchResult {
     id: string;
     type: string;
+    region?: string;
+    field?: string;
     title: string;
     year: number;
     link: string;
     keywords: string[];
-    score: number;
+}
+
+export interface SearchCapabilities {
+    types: string[];
+    regions: string[];
+    fields: string[];
+    yearRange: {
+        min: number;
+        max: number;
+    } | null;
 }
 
 export interface SearchResponse {
@@ -41,6 +54,18 @@ export const searchDocuments = async (params: SearchParams): Promise<SearchRespo
 
     const response = await api.get<SearchResponse>('/search', { params: cleanParams });
     return response.data;
+};
+
+export const getCapabilities = async (): Promise<SearchCapabilities> => {
+    const response = await api.get<SearchCapabilities>('/search/capabilities');
+    return response.data;
+};
+
+export const getAutocompleteSuggestions = async (query: string): Promise<string[]> => {
+    const response = await api.get<{ suggestions: string[] }>('/search/autocomplete', {
+        params: { q: query },
+    });
+    return response.data.suggestions;
 };
 
 export default api;
