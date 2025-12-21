@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getAutocompleteSuggestions } from '../api/searchApi';
+import { getAutocompleteSuggestions, type AutocompleteSuggestion } from '../api/searchApi';
 
 interface UseAutocompleteResult {
-    suggestions: string[];
+    suggestions: AutocompleteSuggestion[];
     isLoading: boolean;
     selectedIndex: number;
     setSelectedIndex: (index: number) => void;
@@ -10,10 +10,11 @@ interface UseAutocompleteResult {
 }
 
 export function useAutocomplete(query: string, enabled: boolean): UseAutocompleteResult {
-    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [suggestions, setSuggestions] = useState<AutocompleteSuggestion[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
-    const debounceTimer = useRef<number | null>(null);
+    // Use ReturnType<typeof setTimeout> for better type safety across environments
+    const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const fetchSuggestions = useCallback(async (searchQuery: string) => {
         if (searchQuery.length < 3) {

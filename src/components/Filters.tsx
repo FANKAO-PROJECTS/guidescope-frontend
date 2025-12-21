@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Filter, X, ChevronDown } from 'lucide-react';
 import type { SearchCapabilities } from '../api/searchApi';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface FiltersProps {
     capabilities: SearchCapabilities | null;
@@ -20,6 +21,7 @@ interface FiltersProps {
 const Filters: React.FC<FiltersProps> = ({
     capabilities, type, setType, region, setRegion, field, setField, yearFrom, setYearFrom, yearTo, setYearTo,
 }) => {
+    const { t } = useTranslation();
     const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
     const clearFilters = () => {
@@ -42,9 +44,9 @@ const Filters: React.FC<FiltersProps> = ({
     const FilterContent = () => (
         <>
             <div className="filter-group">
-                <label className="filter-label">Category</label>
+                <label className="filter-label">{t('filter.category')}</label>
                 <select value={type} onChange={(e) => setType(e.target.value)} className="filter-select">
-                    <option value="">All Insights</option>
+                    <option value="">{t('filter.category.all')}</option>
                     {capabilities?.types.map(t => (
                         <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
                     ))}
@@ -52,9 +54,9 @@ const Filters: React.FC<FiltersProps> = ({
             </div>
 
             <div className="filter-group">
-                <label className="filter-label">Region</label>
+                <label className="filter-label">{t('filter.region')}</label>
                 <select value={region} onChange={(e) => setRegion(e.target.value)} className="filter-select">
-                    <option value="">Any Region</option>
+                    <option value="">{t('filter.region.any')}</option>
                     {capabilities?.regions.map(r => (
                         <option key={r} value={r}>{r}</option>
                     ))}
@@ -62,9 +64,9 @@ const Filters: React.FC<FiltersProps> = ({
             </div>
 
             <div className="filter-group">
-                <label className="filter-label">Specialty</label>
+                <label className="filter-label">{t('filter.specialty')}</label>
                 <select value={field} onChange={(e) => setField(e.target.value)} className="filter-select">
-                    <option value="">Any Specialty</option>
+                    <option value="">{t('filter.specialty.any')}</option>
                     {capabilities?.fields.map(f => (
                         <option key={f} value={f}>{f}</option>
                     ))}
@@ -73,16 +75,16 @@ const Filters: React.FC<FiltersProps> = ({
 
             <div className="flex gap-4">
                 <div className="filter-group flex-1">
-                    <label className="filter-label">Start</label>
+                    <label className="filter-label">{t('filter.start')}</label>
                     <select value={yearFrom} onChange={(e) => setYearFrom(e.target.value === '' ? '' : parseInt(e.target.value))} className="filter-select">
-                        <option value="">Any Year</option>
+                        <option value="">{t('filter.year.any')}</option>
                         {years.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                 </div>
                 <div className="filter-group flex-1">
-                    <label className="filter-label">End</label>
+                    <label className="filter-label">{t('filter.end')}</label>
                     <select value={yearTo} onChange={(e) => setYearTo(e.target.value === '' ? '' : parseInt(e.target.value))} className="filter-select">
-                        <option value="">Any Year</option>
+                        <option value="">{t('filter.year.any')}</option>
                         {years.map(y => <option key={y} value={y}>{y}</option>)}
                     </select>
                 </div>
@@ -90,7 +92,7 @@ const Filters: React.FC<FiltersProps> = ({
 
             {hasActiveFilters && (
                 <button onClick={clearFilters} className="btn-tertiary mt-2">
-                    Clear filters
+                    {t('filters.clear')}
                 </button>
             )}
         </>
@@ -102,7 +104,7 @@ const Filters: React.FC<FiltersProps> = ({
             <div className="desktop-filters glass-effect filter-bar">
                 <div className="flex items-center gap-2">
                     <Filter size={16} className="text-medical" />
-                    <span className="filter-label">Refine</span>
+                    <span className="filter-label">{t('filters.refine')}</span>
                 </div>
                 <FilterContent />
             </div>
@@ -115,7 +117,7 @@ const Filters: React.FC<FiltersProps> = ({
                 >
                     <div className="flex items-center gap-2">
                         <Filter size={18} className="text-medical" />
-                        <span className="font-bold text-sm uppercase tracking-widest text-primary">Dimensions</span>
+                        <span className="font-bold text-sm uppercase tracking-widest text-primary">{t('filters.dimensions')}</span>
                     </div>
                     {hasActiveFilters && (
                         <span className="filter-badge">!</span>
@@ -142,7 +144,7 @@ const Filters: React.FC<FiltersProps> = ({
                             className="mobile-drawer"
                         >
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-lg font-bold">Refine Results</h3>
+                                <h3 className="text-lg font-bold">{t('filters.refine')}</h3>
                                 <button onClick={() => setIsMobileDrawerOpen(false)} className="p-2 -mr-2">
                                     <X size={24} className="text-muted" />
                                 </button>
@@ -153,7 +155,7 @@ const Filters: React.FC<FiltersProps> = ({
                                     onClick={() => setIsMobileDrawerOpen(false)}
                                     className="w-full btn-secondary mt-4 font-bold"
                                 >
-                                    Close & View results
+                                    {t('filters.close_view')}
                                 </button>
                             </div>
                         </motion.div>

@@ -16,6 +16,8 @@ export interface SearchParams {
     year_to?: number;
     limit?: number;
     offset?: number;
+    slug?: string;
+    exact?: boolean;
 }
 
 export interface SearchResult {
@@ -46,6 +48,11 @@ export interface SearchResponse {
     offset: number;
 }
 
+export interface AutocompleteSuggestion {
+    title: string;
+    slug: string;
+}
+
 export const searchDocuments = async (params: SearchParams): Promise<SearchResponse> => {
     // Filter out undefined/null params
     const cleanParams = Object.fromEntries(
@@ -61,11 +68,23 @@ export const getCapabilities = async (): Promise<SearchCapabilities> => {
     return response.data;
 };
 
-export const getAutocompleteSuggestions = async (query: string): Promise<string[]> => {
-    const response = await api.get<{ suggestions: string[] }>('/search/autocomplete', {
-        params: { q: query },
-    });
-    return response.data.suggestions;
+export const getAutocompleteSuggestions = async (query: string): Promise<AutocompleteSuggestion[]> => {
+    try {
+        const response = await api.get<{ suggestions: AutocompleteSuggestion[] }>('/search/autocomplete', {
+            params: { q: query },
+        });
+        // Ensure we always return an array, even if the response structure is unexpected
+        return response.data?.suggestions || [];
+    } catch (error) {
+        // Log error for debugging but don't throw - return empty array instead
+        // This allows the UI to continue working even if autocomplete fails
+        if (axios.isAxiosError(error)) {
+            console.warn('Autocomplete API error:', error.response?.status, error.response?.data);
+        } else {
+            console.warn('Autocomplete error:', error);
+        }
+        return [];
+    }
 };
 
 export default api;

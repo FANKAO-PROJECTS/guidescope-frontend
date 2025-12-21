@@ -3,13 +3,16 @@ import SearchBar from './components/SearchBar'
 import Filters from './components/Filters'
 import ResultCard from './components/ResultCard'
 import LoadingSpinner from './components/LoadingSpinner'
+import LanguageSwitcher from './components/LanguageSwitcher'
 import { searchDocuments, getCapabilities } from './api/searchApi'
 import type { SearchResult, SearchParams, SearchCapabilities } from './api/searchApi'
 import { BookOpen, AlertCircle, SearchIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import SearchMeta from './components/SearchMeta'
+import { useTranslation } from 'react-i18next'
 
 function App() {
+  const { t } = useTranslation()
   const [results, setResults] = useState<SearchResult[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -38,7 +41,7 @@ function App() {
     return false;
   }, [query, submittedQuery]);
 
-  const handleSearch = useCallback(async (keyword: string, currentOffset: number = 0) => {
+  const handleSearch = useCallback(async (keyword: string, currentOffset: number = 0, exact: boolean = false) => {
     setIsLoading(true);
     setError(null);
     setHasSearched(true);
@@ -56,7 +59,8 @@ function App() {
       year_from: typeof yearFrom === 'number' ? yearFrom : undefined,
       year_to: typeof yearTo === 'number' ? yearTo : undefined,
       limit: PAGE_SIZE,
-      offset: currentOffset
+      offset: currentOffset,
+      exact: exact
     }
 
     // URL Sync
@@ -86,12 +90,12 @@ function App() {
       }
       setTotalResults(data.total);
     } catch (err) {
-      setError('Service temporary unavailable.');
+      setError(t('results.error'));
       console.error(err);
     } finally {
       setIsLoading(false);
     }
-  }, [type, region, field, yearFrom, yearTo]);
+  }, [type, region, field, yearFrom, yearTo, t]);
 
   const loadMore = () => {
     const nextOffset = offset + PAGE_SIZE;
@@ -111,16 +115,16 @@ function App() {
 
       const params = new URLSearchParams(window.location.search);
       const q = params.get('q') || '';
-      const t = params.get('type') || '';
+      const tParam = params.get('type') || '';
       const r = params.get('region') || '';
       const f = params.get('field') || '';
       const from = params.get('year_from');
       const to = params.get('year_to');
 
-      if (q || t || r || f || from || to) {
+      if (q || tParam || r || f || from || to) {
         setQuery(q);
         setSubmittedQuery(q);
-        setType(t);
+        setType(tParam);
         setRegion(r);
         setField(f);
         if (from) setYearFrom(parseInt(from));
@@ -129,7 +133,7 @@ function App() {
         // Use timeout to ensure state is flushed or use internal vars
         const searchParams: SearchParams = {
           q: q || undefined,
-          type: t || undefined,
+          type: tParam || undefined,
           region: r || undefined,
           field: f || undefined,
           year_from: from ? parseInt(from) : undefined,
@@ -145,7 +149,7 @@ function App() {
           setTotalResults(data.total);
           setHasSearched(true);
         } catch (err) {
-          setError('Failed to perform initial search.');
+          setError(t('results.error'));
         } finally {
           setIsLoading(false);
         }
@@ -153,7 +157,7 @@ function App() {
     };
 
     initialize();
-  }, []);
+  }, [t]);
 
   // Filter Rule — Rule B: One or more filters have values -> execute search
   useEffect(() => {
@@ -166,17 +170,20 @@ function App() {
 
   return (
     <div className="container mt-8">
-      <header className="text-center mb-8">
+      <header className="flex flex-col items-center mb-8 relative">
+        <div className="absolute right-0 top-0">
+          <LanguageSwitcher />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-center gap-4 mb-4"
         >
           <BookOpen className="text-medical" size={42} />
-          <h1 className="text-4xl title-gradient">GuidelineX</h1>
+          <h1 className="text-4xl title-gradient">{t('app.title')}</h1>
         </motion.div>
-        <p className="text-muted">
-          Access high-quality clinical and professional insights with speed and precision.
+        <p className="text-muted text-center max-w-lg">
+          {t('app.subtitle')}
         </p>
       </header>
 
@@ -185,9 +192,9 @@ function App() {
           <SearchBar
             query={query}
             setQuery={setQuery}
-            onSearch={(q) => {
+            onSearch={(q, exact) => {
               setOffset(0);
-              handleSearch(q, 0);
+              handleSearch(q, 0, exact);
             }}
             isLoading={isLoading}
           />
@@ -214,12 +221,15 @@ function App() {
             ) : error ? (
               <motion.div key="error" className="text-center p-12">
                 <AlertCircle className="text-red-500 mb-4" size={48} />
-                <h2 className="mb-2">Search Interrupted</h2>
-                <p className="text-muted">We’re having trouble loading results.</p>
-                <p className="text-sm mt-1">Please try again.</p>
+                <h2 className="mb-2">{t('results.title')} - Error</h2>
+                <p className="text-muted">{error}</p>
+                <p className="text-sm mt-1">{t('results.retry')}</p>
               </motion.div>
             ) : results.length > 0 ? (
               <div key="results">
+                <div className="flex items-center justify-between mb-4 px-2">
+                  <h2 className="text-xl font-bold text-primary">{t('results.title')}</h2>
+                </div>
                 <div className="results-grid">
                   {results.map((r, idx) => <ResultCard key={`${r.id}-${idx}`} result={r} index={idx} />)}
                 </div>
@@ -230,7 +240,7 @@ function App() {
                       disabled={isLoading}
                       className="btn-secondary w-full sm:w-auto"
                     >
-                      {isLoading ? 'Enhancing Results...' : 'Load more results'}
+                      {isLoading ? t('results.loading_more') : t('results.load_more')}
                     </button>
                   </div>
                 )}
@@ -238,8 +248,8 @@ function App() {
             ) : hasSearched ? (
               <div key="empty" className="text-center p-12 text-muted">
                 <SearchIcon size={48} className="mb-4 opacity-10" />
-                <p>No results found.</p>
-                <p className="text-sm mt-2">Try adjusting filters or using broader terms.</p>
+                <p>{t('results.empty')}</p>
+                <p className="text-sm mt-2">{t('results.empty_hint')}</p>
                 <button
                   onClick={() => {
                     setQuery('');
@@ -256,25 +266,25 @@ function App() {
                   }}
                   className="mt-6 btn-tertiary"
                 >
-                  Clear all
+                  {t('results.clear_all')}
                 </button>
               </div>
             ) : (
               <motion.div key="welcome" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center p-12 glass-effect">
-                <h3 className="mb-4">Begin Your Investigation</h3>
-                <p className="text-sm text-muted mb-8 italic">Titles are primary data, not decorations.</p>
+                <h3 className="mb-4">{t('welcome.title')}</h3>
+                <p className="text-sm text-muted mb-8 italic">{t('welcome.subtitle')}</p>
                 <div className="flex justify-center gap-8 text-muted">
                   <div className="flex flex-col items-center">
                     <span className="card-tag mb-2">1</span>
-                    <p className="text-xs">Type keyword & Enter</p>
+                    <p className="text-xs">{t('welcome.step1')}</p>
                   </div>
                   <div className="flex flex-col items-center">
                     <span className="card-tag mb-2">2</span>
-                    <p className="text-xs">Apply filters</p>
+                    <p className="text-xs">{t('welcome.step2')}</p>
                   </div>
                   <div className="flex flex-col items-center">
                     <span className="card-tag mb-2">3</span>
-                    <p className="text-xs">Examine full titles</p>
+                    <p className="text-xs">{t('welcome.step3')}</p>
                   </div>
                 </div>
               </motion.div>
@@ -284,7 +294,7 @@ function App() {
       </main>
 
       <footer className="text-center py-8 text-muted opacity-30 text-xs">
-        GUIDELINEX • SEARCH DISCOVERY PLATFORM • {new Date().getFullYear()}
+        {t('footer.text')} • {new Date().getFullYear()}
       </footer>
     </div>
   )
