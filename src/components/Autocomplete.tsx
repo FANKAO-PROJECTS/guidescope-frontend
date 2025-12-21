@@ -5,7 +5,6 @@ interface AutocompleteProps {
     suggestions: string[];
     selectedIndex: number;
     onSelect: (suggestion: string) => void;
-    onClose: () => void;
     query: string;
 }
 
@@ -13,7 +12,6 @@ const Autocomplete: React.FC<AutocompleteProps> = ({
     suggestions,
     selectedIndex,
     onSelect,
-    onClose,
     query,
 }) => {
     if (suggestions.length === 0) return null;

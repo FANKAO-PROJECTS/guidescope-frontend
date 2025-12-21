@@ -70,7 +70,6 @@ const SearchBar: React.FC<SearchBarProps> = ({ query, setQuery, onSearch, isLoad
                 suggestions={suggestions}
                 selectedIndex={selectedIndex}
                 onSelect={handleSuggestionSelect}
-                onClose={clearSuggestions}
                 query={query}
             />
         </div>
