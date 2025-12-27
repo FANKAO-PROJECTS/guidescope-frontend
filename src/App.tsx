@@ -6,6 +6,8 @@ import LoadingSpinner from './components/LoadingSpinner'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import { searchDocuments, getCapabilities } from './api/searchApi'
 import type { SearchResult, SearchParams, SearchCapabilities } from './api/searchApi'
+import { getStats, recordVisit } from './api/statsApi'
+import type { SystemStats } from './api/statsApi'
 import { AlertCircle, SearchIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import SearchMeta from './components/SearchMeta'
@@ -33,6 +35,7 @@ function App() {
   const [totalResults, setTotalResults] = useState(0)
   const [offset, setOffset] = useState(0)
   const [capabilities, setCapabilities] = useState<SearchCapabilities | null>(null)
+  const [stats, setStats] = useState<SystemStats | null>(null)
   const PAGE_SIZE = 20
 
   // Rule: UI must never treat stale results as fresh.
@@ -90,6 +93,9 @@ function App() {
         setResults(prev => [...prev, ...data.results]);
       }
       setTotalResults(data.total);
+
+      // Refresh stats after successful search to update search counter
+      getStats().then(setStats).catch(console.error);
     } catch (err) {
       setError(t('results.error'));
       console.error(err);
@@ -108,10 +114,17 @@ function App() {
   useEffect(() => {
     const initialize = async () => {
       try {
-        const caps = await getCapabilities();
+        const [caps, currentStats] = await Promise.all([
+          getCapabilities(),
+          getStats()
+        ]);
         setCapabilities(caps);
+        setStats(currentStats);
+
+        // Record visit exactly once on start
+        recordVisit().catch(console.error);
       } catch (err) {
-        console.error('Failed to fetch capabilities:', err);
+        console.error('Failed to fetch initial data:', err);
       }
 
       const params = new URLSearchParams(window.location.search);
@@ -300,9 +313,9 @@ function App() {
       <footer className="footer-layout py-8 text-muted text-[10px] uppercase tracking-widest">
         <div className="flex flex-col items-center gap-4 opacity-40">
           <div className="flex gap-4">
-            <span>{t('footer.stats.visits')}: 1,240</span>
+            <span>{t('footer.stats.visits')}: {stats?.visitCount?.toLocaleString() || '0'}</span>
             <span className="opacity-20">|</span>
-            <span>{t('footer.stats.searches')}: 8,512</span>
+            <span>{t('footer.stats.searches')}: {stats?.searchCount?.toLocaleString() || '0'}</span>
           </div>
           <div className="flex items-center gap-2">
             <span>{t('footer.text')}</span>
