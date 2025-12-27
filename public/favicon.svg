@@ -1,0 +1,41 @@
+<svg
+  width="120"
+  height="120"
+  viewBox="20 10 80 100"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Shield -->
+  <defs>
+    <linearGradient id="shieldGradientFav" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1E88E5" />
+      <stop offset="100%" stop-color="#42A5F5" />
+    </linearGradient>
+  </defs>
+
+  <path
+    d="M60 10 L100 25 V65 C100 85 80 100 60 110 C40 100 20 85 20 65 V25 Z"
+    fill="url(#shieldGradientFav)"
+  />
+
+  <!-- Magnifying glass -->
+  <circle
+    cx="60"
+    cy="55"
+    r="22"
+    stroke="#1FB6A6"
+    stroke-width="6"
+    fill="white"
+  />
+
+  <path
+    d="M75 72 L93.38 90.38"
+    stroke="#1FB6A6"
+    stroke-width="8"
+    stroke-linecap="round"
+  />
+
+  <!-- Medical cross -->
+  <rect x="56" y="45" width="8" height="20" rx="2" fill="#F9A825" />
+  <rect x="50" y="51" width="20" height="8" rx="2" fill="#F9A825" />
+</svg>
