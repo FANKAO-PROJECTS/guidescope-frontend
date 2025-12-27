@@ -48,7 +48,7 @@ const Filters: React.FC<FiltersProps> = ({
                 <select value={type} onChange={(e) => setType(e.target.value)} className="filter-select">
                     <option value="">{t('filter.category.all')}</option>
                     {capabilities?.types.map(t => (
-                        <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
+                        <option key={t} value={t}>{useTranslation().t(`category.${t.toLowerCase()}`, t)}</option>
                     ))}
                 </select>
             </div>

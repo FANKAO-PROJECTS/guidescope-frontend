@@ -16,6 +16,7 @@ const LanguageSwitcher: React.FC = () => {
             className="flex items-center gap-2 px-3 py-1 text-sm font-medium text-muted hover:text-primary transition-colors"
             title="Switch Language"
         >
+            <span className="text-xs mr-1 opacity-70">Language / Ngôn ngữ</span>
             <Globe size={16} />
             <span className="uppercase">{i18n.language === 'vi' ? 'VN' : 'US'}</span>
         </button>

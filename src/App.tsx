@@ -6,10 +6,11 @@ import LoadingSpinner from './components/LoadingSpinner'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import { searchDocuments, getCapabilities } from './api/searchApi'
 import type { SearchResult, SearchParams, SearchCapabilities } from './api/searchApi'
-import { BookOpen, AlertCircle, SearchIcon } from 'lucide-react'
+import { AlertCircle, SearchIcon } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import SearchMeta from './components/SearchMeta'
 import { useTranslation } from 'react-i18next'
+import logo from './assets/logos/logo.svg'
 
 function App() {
   const { t } = useTranslation()
@@ -175,12 +176,15 @@ function App() {
           <LanguageSwitcher />
         </div>
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-center gap-4 mb-4"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex items-center justify-center mb-6"
         >
-          <BookOpen className="text-medical" size={42} />
-          <h1 className="text-4xl title-gradient">{t('app.title')}</h1>
+          <img
+            src={logo}
+            alt="GuideScope Logo"
+            className="w-full max-w-[280px] md:max-w-[420px] h-auto object-contain"
+          />
         </motion.div>
         <p className="text-muted text-center max-w-lg">
           {t('app.subtitle')}
@@ -293,8 +297,21 @@ function App() {
         </section>
       </main>
 
-      <footer className="text-center py-8 text-muted opacity-30 text-xs">
-        {t('footer.text')} • {new Date().getFullYear()}
+      <footer className="footer-layout py-8 text-muted text-[10px] uppercase tracking-widest">
+        <div className="flex flex-col items-center gap-4 opacity-40">
+          <div className="flex gap-4">
+            <span>{t('footer.stats.visits')}: 1,240</span>
+            <span className="opacity-20">|</span>
+            <span>{t('footer.stats.searches')}: 8,512</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span>{t('footer.text')}</span>
+            <span className="opacity-20">•</span>
+            <span>{new Date().getFullYear()}</span>
+            <span className="opacity-20">•</span>
+            <span className="font-bold text-primary/60">{t('footer.version')} 1.0.0</span>
+          </div>
+        </div>
       </footer>
     </div>
   )

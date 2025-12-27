@@ -1,5 +1,5 @@
 {
-    "app.title": "GuidelineX",
+    "app.title": "GuideScope",
     "app.subtitle": "Truy cập thông tin chi tiết về những hướng dẫn lâm sàng và chuyên môn với tốc độ và độ chính xác cao.",
     "search.placeholder": "Tìm kiếm hướng dẫn lâm sàng hoặc duyệt bằng bộ lọc",
     "results.title": "Kết quả tìm kiếm",
@@ -28,11 +28,18 @@
     "filter.start": "Từ năm",
     "filter.end": "Đến năm",
     "filter.year.any": "Mọi năm",
+    "category.guidelines": "Các hướng dẫn",
+    "category.consensus": "Đồng thuận",
+    "category.review": "Tổng quan",
+    "category.trial": "Nghiên cứu",
     "meta.discovery": "Tìm thấy",
     "meta.displaying": "Hiển thị",
     "meta.document": "kết quả",
     "meta.documents": "kết quả",
     "meta.stale": "Có kết quả mới.",
     "meta.press_enter": "Nhấn Enter để xem",
-    "footer.text": "GUIDELINEX • NỀN TẢNG KHÁM PHÁ TÌM KIẾM"
+    "footer.text": "GUIDESCOPE • NỀN TẢNG KHÁM PHÁ TÌM KIẾM",
+    "footer.version": "Phiên bản",
+    "footer.stats.visits": "Lượt truy cập",
+    "footer.stats.searches": "Lượt tìm kiếm"
 }

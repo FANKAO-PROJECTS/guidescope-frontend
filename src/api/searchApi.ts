@@ -28,6 +28,9 @@ export interface SearchResult {
     title: string;
     year: number;
     link: string;
+    authors?: string;
+    source?: string;
+    citation?: string;
     keywords: string[];
 }
 
