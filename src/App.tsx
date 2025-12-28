@@ -67,9 +67,8 @@ function App() {
       exact: exact
     }
 
-    // URL Sync
+    // URL Sync (Filters only, no q for privacy/best practice)
     const url = new URL(window.location.href);
-    if (keyword) url.searchParams.set('q', keyword); else url.searchParams.delete('q');
     if (type) url.searchParams.set('type', type); else url.searchParams.delete('type');
     if (region) url.searchParams.set('region', region); else url.searchParams.delete('region');
     if (field) url.searchParams.set('field', field); else url.searchParams.delete('field');
@@ -77,12 +76,24 @@ function App() {
     if (yearTo) url.searchParams.set('year_to', yearTo.toString()); else url.searchParams.delete('year_to');
     window.history.pushState({}, '', url.toString());
 
+    // Session Persistence for Search (Best Practice)
+    if (keyword) {
+      sessionStorage.setItem('gs_q', keyword);
+    } else if (!type && !region && !field && !yearFrom && !yearTo) {
+      sessionStorage.removeItem('gs_q');
+    }
+
     // If no query and no filters, reset to initial state
     if (!keyword && !type && !region && !field && !yearFrom && !yearTo) {
       setHasSearched(false);
       setResults([]);
       setIsLoading(false);
       return;
+    }
+
+    // UX: Clear search bar after successful submission if it's a new search
+    if (currentOffset === 0) {
+      setQuery('');
     }
 
     try {
@@ -128,7 +139,7 @@ function App() {
       }
 
       const params = new URLSearchParams(window.location.search);
-      const q = params.get('q') || '';
+      const q = sessionStorage.getItem('gs_q') || ''; // Prioritize session over URL (privacy)
       const tParam = params.get('type') || '';
       const r = params.get('region') || '';
       const f = params.get('field') || '';
@@ -136,7 +147,7 @@ function App() {
       const to = params.get('year_to');
 
       if (q || tParam || r || f || from || to) {
-        setQuery(q);
+        setQuery(''); // UX: Keep bar empty on refresh if we have a submitted query
         setSubmittedQuery(q);
         setType(tParam);
         setRegion(r);
@@ -214,6 +225,13 @@ function App() {
               handleSearch(q, 0, exact);
             }}
             isLoading={isLoading}
+            filters={{
+              type: type || undefined,
+              region: region || undefined,
+              field: field || undefined,
+              year_from: typeof yearFrom === 'number' ? yearFrom : undefined,
+              year_to: typeof yearTo === 'number' ? yearTo : undefined
+            }}
           />
           <Filters
             capabilities={capabilities}
@@ -228,6 +246,7 @@ function App() {
             count={results.length}
             hasSearched={hasSearched}
             isStale={isStale}
+            submittedQuery={submittedQuery}
           />
         </div>
 

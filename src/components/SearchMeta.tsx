@@ -7,9 +7,10 @@ interface SearchMetaProps {
     count: number;
     hasSearched: boolean;
     isStale?: boolean;
+    submittedQuery?: string;
 }
 
-const SearchMeta: React.FC<SearchMetaProps> = ({ total, count, hasSearched, isStale }) => {
+const SearchMeta: React.FC<SearchMetaProps> = ({ total, count, hasSearched, isStale, submittedQuery }) => {
     const { t } = useTranslation();
 
     if (!hasSearched) return null;
@@ -25,6 +26,14 @@ const SearchMeta: React.FC<SearchMetaProps> = ({ total, count, hasSearched, isSt
                     {t('meta.displaying')} {count} {count !== 1 ? t('meta.documents') : t('meta.document')}
                 </div>
             </div>
+            {submittedQuery && (
+                <div className="px-2">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-medical/5 border border-medical/10 rounded-lg">
+                        <span className="text-[10px] font-bold text-medical uppercase tracking-tighter opacity-60">Results for:</span>
+                        <span className="text-sm font-semibold text-primary">{submittedQuery}</span>
+                    </div>
+                </div>
+            )}
             <AnimatePresence>
                 {isStale && (
                     <motion.div

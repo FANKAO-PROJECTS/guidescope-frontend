@@ -71,10 +71,19 @@ export const getCapabilities = async (): Promise<SearchCapabilities> => {
     return response.data;
 };
 
-export const getAutocompleteSuggestions = async (query: string): Promise<AutocompleteSuggestion[]> => {
+export const getAutocompleteSuggestions = async (query: string, filters?: SearchParams): Promise<AutocompleteSuggestion[]> => {
     try {
+        const params = {
+            q: query,
+            ...filters
+        };
+        // Filter out undefined/null params from the spread filters
+        const cleanParams = Object.fromEntries(
+            Object.entries(params).filter(([_, v]) => v != null)
+        );
+
         const response = await api.get<{ suggestions: AutocompleteSuggestion[] }>('/search/autocomplete', {
-            params: { q: query },
+            params: cleanParams,
         });
         // Ensure we always return an array, even if the response structure is unexpected
         return response.data?.suggestions || [];

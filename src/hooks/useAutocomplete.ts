@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getAutocompleteSuggestions, type AutocompleteSuggestion } from '../api/searchApi';
+import { getAutocompleteSuggestions, type AutocompleteSuggestion, type SearchParams } from '../api/searchApi';
 
 interface UseAutocompleteResult {
     suggestions: AutocompleteSuggestion[];
@@ -9,7 +9,7 @@ interface UseAutocompleteResult {
     clearSuggestions: () => void;
 }
 
-export function useAutocomplete(query: string, enabled: boolean): UseAutocompleteResult {
+export function useAutocomplete(query: string, enabled: boolean, filters?: SearchParams): UseAutocompleteResult {
     const [suggestions, setSuggestions] = useState<AutocompleteSuggestion[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -24,7 +24,7 @@ export function useAutocomplete(query: string, enabled: boolean): UseAutocomplet
 
         setIsLoading(true);
         try {
-            const results = await getAutocompleteSuggestions(searchQuery);
+            const results = await getAutocompleteSuggestions(searchQuery, filters);
             setSuggestions(results);
             setSelectedIndex(-1);
         } catch (error) {
@@ -33,7 +33,7 @@ export function useAutocomplete(query: string, enabled: boolean): UseAutocomplet
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [filters]);
 
     useEffect(() => {
         if (!enabled || query.length < 3) {
@@ -56,7 +56,7 @@ export function useAutocomplete(query: string, enabled: boolean): UseAutocomplet
                 clearTimeout(debounceTimer.current);
             }
         };
-    }, [query, enabled, fetchSuggestions]);
+    }, [query, enabled, filters, fetchSuggestions]);
 
     const clearSuggestions = useCallback(() => {
         setSuggestions([]);

@@ -1,5 +1,6 @@
 {
     "app.title": "GuideScope",
+    "language.title": "Language",
     "app.subtitle": "Access high-quality clinical and professional insights with speed and precision.",
     "search.placeholder": "Search clinical guidelines, or browse using filters",
     "results.title": "Search Results",
@@ -28,6 +29,7 @@
     "filter.start": "From",
     "filter.end": "To",
     "filter.year.any": "Any Year",
+    "category.guideline": "Guideline",
     "category.guidelines": "Guidelines",
     "category.consensus": "Consensus",
     "category.review": "Review",

@@ -1,5 +1,6 @@
 {
     "app.title": "GuideScope",
+    "language.title": "Ngôn ngữ",
     "app.subtitle": "Truy cập thông tin chi tiết về những hướng dẫn lâm sàng và chuyên môn với tốc độ và độ chính xác cao.",
     "search.placeholder": "Tìm kiếm hướng dẫn lâm sàng hoặc duyệt bằng bộ lọc",
     "results.title": "Kết quả tìm kiếm",
@@ -28,6 +29,7 @@
     "filter.start": "Từ năm",
     "filter.end": "Đến năm",
     "filter.year.any": "Mọi năm",
+    "category.guideline": "Hướng dẫn",
     "category.guidelines": "Các hướng dẫn",
     "category.consensus": "Đồng thuận",
     "category.review": "Tổng quan",

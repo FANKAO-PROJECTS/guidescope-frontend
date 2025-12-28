@@ -2,19 +2,20 @@ import React, { useRef, useEffect } from 'react';
 import Autocomplete from './Autocomplete';
 import { useAutocomplete } from '../hooks/useAutocomplete';
 import { useTranslation } from 'react-i18next';
-import type { AutocompleteSuggestion } from '../api/searchApi';
+import type { AutocompleteSuggestion, SearchParams } from '../api/searchApi';
 
 interface SearchBarProps {
     query: string;
     setQuery: (val: string) => void;
     onSearch: (query: string, exact?: boolean) => void;
     isLoading: boolean;
+    filters?: SearchParams;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ query, setQuery, onSearch, isLoading }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ query, setQuery, onSearch, isLoading, filters }) => {
     const { t } = useTranslation();
     const inputRef = useRef<HTMLInputElement>(null);
-    const { suggestions, selectedIndex, setSelectedIndex, clearSuggestions } = useAutocomplete(query, true);
+    const { suggestions, selectedIndex, setSelectedIndex, clearSuggestions } = useAutocomplete(query, true, filters);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
